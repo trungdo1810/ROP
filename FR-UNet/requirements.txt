@@ -1,0 +1,17 @@
+albumentations
+bunch
+loguru
+matplotlib
+numpy
+opencv_python
+Pillow
+ruamel.base
+scikit_learn
+timm
+torch
+torchstat
+torchvision
+tqdm
+ttach
+yacs
+ruamel.yaml
