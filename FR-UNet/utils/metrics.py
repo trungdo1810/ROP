@@ -78,8 +78,10 @@ def count_connect_component(predict, target, threshold=None, connectivity=8):
         predict = np.where(predict >= threshold, 1, 0)
     if torch.is_tensor(target):
         target = target.cpu().detach().numpy()
-    pre_n, _, _, _ = cv2.connectedComponentsWithStats(np.asarray(
-        predict, dtype=np.uint8)*255, connectivity=connectivity)
-    gt_n, _, _, _ = cv2.connectedComponentsWithStats(np.asarray(
-        target, dtype=np.uint8)*255, connectivity=connectivity)
-    return pre_n/gt_n
+    pre_n, _, _, _ = cv2.connectedComponentsWithStats(
+        np.asarray(predict, dtype=np.uint8) * 255, connectivity=connectivity
+    )
+    gt_n, _, _, _ = cv2.connectedComponentsWithStats(
+        np.asarray(target, dtype=np.uint8) * 255, connectivity=connectivity
+    )
+    return pre_n / gt_n

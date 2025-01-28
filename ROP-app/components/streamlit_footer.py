@@ -1,6 +1,19 @@
 import streamlit as st
 from streamlit.components.v1 import html
-from htbuilder import HtmlElement, div, ul, li, br, hr, a, p, img, styles, classes, fonts
+from htbuilder import (
+    HtmlElement,
+    div,
+    ul,
+    li,
+    br,
+    hr,
+    a,
+    p,
+    img,
+    styles,
+    classes,
+    fonts,
+)
 from htbuilder.units import percent, px
 from htbuilder.funcs import rgba, rgb
 
@@ -31,33 +44,23 @@ def layout(*args):
         color="black",
         text_align="center",
         height="auto",
-        opacity=1
+        opacity=1,
     )
 
     style_hr = styles(
-        display="block",
-        margin=px(0, 0, 0, 0),
-        border_style="inset",
-        border_width=px(2)
+        display="block", margin=px(0, 0, 0, 0), border_style="inset", border_width=px(2)
     )
 
     body = p(
-        id='myFooter',
+        id="myFooter",
         style=styles(
             margin=px(0, 0, 0, 0),
             padding=px(5),
             font_size="0.8rem",
-            color="rgb(51,51,51)"
-        )
-    )
-    foot = div(
-        style=style_div
-    )(
-        hr(
-            style=style_hr
+            color="rgb(51,51,51)",
         ),
-        body
     )
+    foot = div(style=style_div)(hr(style=style_hr), body)
 
     st.markdown(style, unsafe_allow_html=True)
 
@@ -70,19 +73,19 @@ def layout(*args):
 
     st.markdown(str(foot), unsafe_allow_html=True)
 
-    js_code = '''
+    js_code = """
     <script>
     function rgbReverse(rgb){
         var r = rgb[0]*0.299;
         var g = rgb[1]*0.587;
         var b = rgb[2]*0.114;
-        
+
         if ((r + g + b)/255 > 0.5){
             return "rgb(49, 51, 63)"
         }else{
             return "rgb(250, 250, 250)"
         }
-        
+
     };
     var stApp_css = window.parent.document.querySelector("#root > div:nth-child(1) > div > div > div");
     window.onload = function () {
@@ -96,7 +99,7 @@ def layout(*args):
                     /***********************************************/
                 });
             });
-            
+
             /**Element**/
             mutationObserver.observe(stApp_css, {
                 attributes: true,
@@ -107,10 +110,10 @@ def layout(*args):
                 characterDataOldValue: true
             });
     }
-    
+
 
     </script>
-    '''
+    """
     html(js_code)
 
 
