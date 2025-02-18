@@ -20,7 +20,6 @@ def rename_files_in_folder(root_path):
                 file.rename(folder / new_name)
                 print(f"Renamed in {folder.name}: {file.name} -> {new_name}")
 
-
 def convert_mask_to_yolo(img_folder, mask_folder, output_folder, class_id=0):
     # Ensure output folder exists
     output_folder = Path(output_folder)
