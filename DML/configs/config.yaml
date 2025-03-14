@@ -1,34 +1,10 @@
-model:
-  types:
-    - resnet50
-    - efficientnet_b0
-    - efficientnet_b4
-
-mining:
-  batch_easy_hard_miner:
-    - pos_strategy: easy
-      neg_strategy: all
-    - pos_strategy: easy
-      neg_strategy: semi-hard
-    - pos_strategy: easy
-      neg_strategy: hard
-
-  triplet_margin_miner:
-    - m: 0.1
-      smooth_loss: false
-    - m: 0.2
-      smooth_loss: false
-    - m: 0.5
-      smooth_loss: false
-    - m: 1
-      smooth_loss: false
-    - m: 0
-      smooth_loss: true
-
 loss:
-  ntxent_loss:
-    temperature: 0.1
-  triplet_loss: {}
+  type: ce  # Options: ce, focal
+  focal:
+    gamma: 2.0
+    alpha: [0.3, 0.3, 0.4]
+  ce:
+    weight: [1.0, 1.0, 1.0]
 
 training:
   epochs: 10
