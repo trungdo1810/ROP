@@ -1,0 +1,12 @@
+loss:
+  type: ce  # Options: ce, focal
+  focal:
+    gamma: 2.0
+    alpha: [0.3, 0.3, 0.4]
+  ce:
+    weight: [1.0, 1.0, 1.0]
+
+training:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 0.001
