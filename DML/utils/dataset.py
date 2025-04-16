@@ -1,81 +1,69 @@
+from torch.utils.data import Dataset
 import os
-import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
+import cv2
 from PIL import Image
+import numpy as np
+import torch
+import pandas as pd
 
 
-class CustomDataset(Dataset):
-    def __init__(self, data_dir, transform=None):
-        self.data_dir = data_dir
+class TripletDataset(Dataset):
+    def __init__(self, root_dir, df, mode, transform=None):
+        self.root = root_dir
         self.transform = transform
-        self.image_paths = []
-        self.labels = []
+        self.mode = mode
+        self.df = df
+        self.img_path_list = df["path"].tolist()
 
-        # Load image paths and labels
-        for label, folder in enumerate(["crop_normal", "crop_plus", "crop_preplus"]):
-            folder_path = os.path.join(data_dir, folder)
-            for filename in os.listdir(folder_path):
-                if filename.endswith(".jpg"):
-                    self.image_paths.append(os.path.join(folder_path, filename))
-                    self.labels.append(label)
+        if "label" in df.columns:
+            self.labels = df["label"].tolist()
+        else:
+            self.labels = None
 
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.img_path_list)
 
     def __getitem__(self, idx):
-        image_path = self.image_paths[idx]
-        image = Image.open(image_path).convert("RGB")
-        label = self.labels[idx]
+        image_path = os.path.join(self.root, self.img_path_list[idx])
 
-        if self.transform:
-            image = self.transform(image)
+        # Try OpenCV first (faster)
+        try:
+            image = cv2.imread(image_path)
+            if image is None:
+                raise ValueError("OpenCV couldn't read the image")
+            # Convert BGR (OpenCV default) to RGB
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        return image, label
+        # Fallback to PIL if OpenCV fails
+        except:
+            try:
+                image = Image.open(image_path).convert("RGB")
+                image = np.array(image)
+            except Exception as e:
+                raise Exception(
+                    f"Failed to load image {image_path} with both OpenCV and PIL: {str(e)}"
+                )
 
+        # Apply transforms if provided
+        if self.transform is not None:
+            # Ensure image is in correct format for transforms
+            transformed = self.transform(image=image)
+            image = transformed["image"]
 
-def create_data_loaders(data_dir, batch_size, train_ratio=0.8, shuffle=True):
-    # Define transformations
-    transform = transforms.Compose(
-        [
-            transforms.Resize((1200, 1200)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
-
-    # Create dataset
-    dataset = CustomDataset(data_dir, transform=transform)
-
-    # Split dataset into train and validation sets
-    dataset_size = len(dataset)
-    # print(dataset_size)
-
-    train_size = int(train_ratio * dataset_size)
-    val_size = dataset_size - train_size
-
-    train_dataset, val_dataset = torch.utils.data.random_split(
-        dataset, [train_size, val_size]
-    )
-
-    n_workers = os.cpu_count()
-    print("num_workers = ", n_workers)
-
-    # Create data loaders
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=shuffle, num_workers=n_workers
-    )
-    val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, num_workers=n_workers
-    )
-
-    return train_loader, val_loader
+        if self.mode == "test":
+            return image
+        else:
+            label = self.labels[idx]
+            return image, torch.tensor(label).long()
 
 
 if __name__ == "__main__":
-    data_dir = "C:\\Users\\UCL\\Desktop\\Do\\DML\\datasets"
-    batch_size = 32
-    epochs = 50
+    num_classes = 3
+    root_dir = "../datasets/"
+    csv_train_file = "train_data_with_folds.csv"
+    class_list = ["normal", "preplus", "plus"]
+    label_dict = {cls: i for i, cls in enumerate(class_list)}
 
-    # Create data loaders
-    train_loader, val_loader = create_data_loaders(data_dir, batch_size)
+    df = pd.read_csv(os.path.join(root_dir, csv_train_file))
+    ds = TripletDataset(root_dir, df, "train", transform=None)
+    # print(df.__len__())
