@@ -9,6 +9,7 @@ import base64
 
 st.set_page_config(layout="wide")
 
+
 def generate_heatmap(probabilities):
     """
     Generate a heatmap for the predicted probabilities.
@@ -24,6 +25,7 @@ def generate_heatmap(probabilities):
         yticklabels=["VSS"],
     )
     return fig
+
 
 def generate_similarity_heatmap(similarities):
     """
@@ -155,7 +157,7 @@ def main():
 
         # GradCAM toggle
         st.session_state.show_gradcam = st.checkbox(
-            "Show GradCAM Visualization", value=st.session_state.show_gradcam
+            "Show Diagnosis", value=st.session_state.show_gradcam
         )
 
         # Call backend if results are not already fetched
@@ -173,7 +175,7 @@ def main():
                     st.error(f"Error: {response.status_code}, {response.text}")
             except requests.exceptions.RequestException as e:
                 st.error(f"Failed to connect to backend: {e}")
-                
+
         # Initialize results
         heatmap = None
         thresholded_heatmap = None
@@ -197,7 +199,9 @@ def main():
             data = {"threshold": threshold}
 
             # Debug: Print the image name and size
-            print(f"Sending image to backend: {image_name}, size: {len(image_bytes)} bytes")
+            # print(
+            #     f"Sending image to backend: {image_name}, size: {len(image_bytes)} bytes"
+            # )
 
             try:
                 response = requests.post(
@@ -273,8 +277,10 @@ def main():
             metric_col1, metric_col2 = st.columns([1, 1])
             with metric_col1:
                 # Get the position (index) of the most similar reference
-                most_similar_index = list(similarities.values()).index(max(similarities.values())) + 1
-                st.metric(label="Most Similar Reference", value=f"{most_similar_index}")
+                most_similar_index = (
+                    list(similarities.values()).index(max(similarities.values())) + 1
+                )
+                st.metric(label="VSS Prediction", value=f"{most_similar_index}")
             with metric_col2:
                 st.metric(label="Plus Disease Diagnosis", value=diagnosis)
 
