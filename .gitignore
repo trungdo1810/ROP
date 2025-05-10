@@ -182,3 +182,5 @@ datasets/
 
 saved/
 output/
+checkpoints/
+logs/
